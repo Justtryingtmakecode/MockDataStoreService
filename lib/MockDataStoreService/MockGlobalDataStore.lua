@@ -58,9 +58,9 @@ function MockGlobalDataStore:GetAsync(key)
 	if type(key) ~= "string" then
 		error(("bad argument #1 to 'GetAsync' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif #key == 0 then
-		error("bad argument #1 to 'GetAsync' (key name can't be empty)", 2)
+		error("101: bad argument #1 to 'GetAsync' (key name can't be empty)", 2)
 	elseif #key > Constants.MAX_LENGTH_KEY then
-		error(("bad argument #1 to 'GetAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
+		error(("102: bad argument #1 to 'GetAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
 	if self.__getCache[key] and tick() - self.__getCache[key] < Constants.GET_COOLDOWN then
@@ -77,7 +77,7 @@ function MockGlobalDataStore:GetAsync(key)
 	)
 
 	if not success then
-		error("GetAsync rejected with error (request was throttled, but throttled queue was full)", 2)
+		error("301: GetAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	self.__getCache[key] = tick()
@@ -98,9 +98,9 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 	elseif delta ~= nil and type(delta) ~= "number" then
 		error(("bad argument #2 to 'IncrementAsync' (number expected, got %s)"):format(typeof(delta)), 2)
 	elseif #key == 0 then
-		error("bad argument #1 to 'IncrementAsync' (key name can't be empty)", 2)
+		error("101: bad argument #1 to 'IncrementAsync' (key name can't be empty)", 2)
 	elseif #key > Constants.MAX_LENGTH_KEY then
-		error(("bad argument #1 to 'IncrementAsync' (key name exceeds %d character limit)")
+		error(("102: bad argument #1 to 'IncrementAsync' (key name exceeds %d character limit)")
 			:format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
@@ -132,14 +132,14 @@ function MockGlobalDataStore:IncrementAsync(key, delta)
 	end
 
 	if not success then
-		error("IncrementAsync rejected with error (request was throttled, but throttled queue was full)", 2)
+		error("303: IncrementAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	local old = self.__data[key]
 
 	if old ~= nil and (type(old) ~= "number" or old % 1 ~= 0) then
 		Utils.simulateYield()
-		error("IncrementAsync rejected with error (cannot increment non-integer value)", 2)
+		error("502: (Error code: 24) IncrementAsync rejected with error (cannot increment non-integer value)", 2)
 	end
 
 	self.__writeLock[key] = true
@@ -171,9 +171,9 @@ function MockGlobalDataStore:RemoveAsync(key)
 	if type(key) ~= "string" then
 		error(("bad argument #1 to 'RemoveAsync' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif #key == 0 then
-		error("bad argument #1 to 'RemoveAsync' (key name can't be empty)", 2)
+		error("101: bad argument #1 to 'RemoveAsync' (key name can't be empty)", 2)
 	elseif #key > Constants.MAX_LENGTH_KEY then
-		error(("bad argument #1 to 'RemoveAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
+		error(("102: bad argument #1 to 'RemoveAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
 	Utils.simulateErrorCheck("RemoveAsync")
@@ -204,7 +204,7 @@ function MockGlobalDataStore:RemoveAsync(key)
 	end
 
 	if not success then
-		error("RemoveAsync rejected with error (request was throttled, but throttled queue was full)", 2)
+		error("306: RemoveAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	self.__writeLock[key] = true
@@ -231,33 +231,33 @@ function MockGlobalDataStore:SetAsync(key, value)
 	if type(key) ~= "string" then
 		error(("bad argument #1 to 'SetAsync' (string expected, got %s)"):format(typeof(key)), 2)
 	elseif #key == 0 then
-		error("bad argument #1 to 'SetAsync' (key name can't be empty)", 2)
+		error("101: bad argument #1 to 'SetAsync' (key name can't be empty)", 2)
 	elseif #key > Constants.MAX_LENGTH_KEY then
-		error(("bad argument #1 to 'SetAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
+		error(("102: bad argument #1 to 'SetAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	elseif value == nil or type(value) == "function" or type(value) == "userdata" or type(value) == "thread" then
-		error(("bad argument #2 to 'SetAsync' (cannot store value '%s' of type %s)")
+		error(("104: bad argument #2 to 'SetAsync' (cannot store value '%s' of type %s)")
 			:format(tostring(value), typeof(value)), 2)
 	end
 
 	if type(value) == "table" then
 		local isValid, keyPath, reason = Utils.scanValidity(value)
 		if not isValid then
-			error(("bad argument #2 to 'SetAsync' (table has invalid entry at <%s>: %s)")
+			error(("104: bad argument #2 to 'SetAsync' (table has invalid entry at <%s>: %s)")
 				:format(Utils.getStringPath(keyPath), reason), 2)
 		end
 		local pass, content = pcall(function() return HttpService:JSONEncode(value) end)
 		if not pass then
-			error("bad argument #2 to 'SetAsync' (table could not be encoded to json)", 2)
+			error("bad argument #2 to 'SetAsync' (table could not be encoded to json)", 2) --TODO: figure out what error code this is
 		elseif #content > Constants.MAX_LENGTH_DATA then
-			error(("bad argument #2 to 'SetAsync' (encoded data length exceeds %d character limit)")
+			error(("105: bad argument #2 to 'SetAsync' (encoded data length exceeds %d character limit)")
 				:format(Constants.MAX_LENGTH_DATA), 2)
 		end
 	elseif type(value) == "string" then
 		if #value > Constants.MAX_LENGTH_DATA then
-			error(("bad argument #2 to 'SetAsync' (data length exceeds %d character limit)")
+			error(("105: bad argument #2 to 'SetAsync' (data length exceeds %d character limit)")
 				:format(Constants.MAX_LENGTH_DATA), 2)
 		elseif not utf8.len(value) then
-			error("bad argument #2 to 'SetAsync' (string value is not valid UTF-8)", 2)
+			error("bad argument #2 to 'SetAsync' (string value is not valid UTF-8)", 2) --pretty sure this doesnt apply anymore
 		end
 	end
 
@@ -289,7 +289,7 @@ function MockGlobalDataStore:SetAsync(key, value)
 	end
 
 	if not success then
-		error("SetAsync rejected with error (request was throttled, but throttled queue was full)", 2)
+		error("302: SetAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	self.__writeLock[key] = true
@@ -315,9 +315,9 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 	elseif type(transformFunction) ~= "function" then
 		error(("bad argument #2 to 'UpdateAsync' (function expected, got %s)"):format(typeof(transformFunction)), 2)
 	elseif #key == 0 then
-		error("bad argument #1 to 'UpdateAsync' (key name can't be empty)", 2)
+		error("101: bad argument #1 to 'UpdateAsync' (key name can't be empty)", 2)
 	elseif #key > Constants.MAX_LENGTH_KEY then
-		error(("bad argument #1 to 'UpdateAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
+		error(("102: bad argument #1 to 'UpdateAsync' (key name exceeds %d character limit)"):format(Constants.MAX_LENGTH_KEY), 2)
 	end
 
 	Utils.simulateErrorCheck("UpdateAsync")
@@ -354,7 +354,7 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 	end
 
 	if not success then
-		error("UpdateAsync rejected with error (request was throttled, but throttled queue was full)", 2)
+		error("304: UpdateAsync rejected with error (request was throttled, but throttled queue was full)", 2)
 	end
 
 	local value = transformFunction(Utils.deepcopy(self.__data[key]))
@@ -365,26 +365,26 @@ function MockGlobalDataStore:UpdateAsync(key, transformFunction)
 	end
 
 	if type(value) == "function" or type(value) == "userdata" or type(value) == "thread" then
-		error(("UpdateAsync rejected with error (resulting value '%s' is of type %s that cannot be stored)")
+		error(("104: UpdateAsync rejected with error (resulting value '%s' is of type %s that cannot be stored)")
 			:format(tostring(value), typeof(value)), 2)
 	end
 
 	if type(value) == "table" then
 		local isValid, keyPath, reason = Utils.scanValidity(value)
 		if not isValid then
-			error(("UpdateAsync rejected with error (resulting table has invalid entry at <%s>: %s)")
+			error(("104: UpdateAsync rejected with error (resulting table has invalid entry at <%s>: %s)")
 				:format(Utils.getStringPath(keyPath), reason), 2)
 		end
 		local pass, content = pcall(function() return HttpService:JSONEncode(value) end)
 		if not pass then
 			error("UpdateAsync rejected with error (resulting table could not be encoded to json)", 2)
 		elseif #content > Constants.MAX_LENGTH_DATA then
-			error(("UpdateAsync rejected with error (resulting encoded data length exceeds %d character limit)")
+			error(("105: UpdateAsync rejected with error (resulting encoded data length exceeds %d character limit)")
 				:format(Constants.MAX_LENGTH_DATA), 2)
 		end
 	elseif type(value) == "string" then
 		if #value > Constants.MAX_LENGTH_DATA then
-			error(("UpdateAsync rejected with error (resulting data length exceeds %d character limit)")
+			error(("105: UpdateAsync rejected with error (resulting data length exceeds %d character limit)")
 				:format(Constants.MAX_LENGTH_DATA), 2)
 		elseif not utf8.len(value) then
 			error("UpdateAsync rejected with error (string value is not valid UTF-8)", 2)
