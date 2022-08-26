@@ -16,7 +16,7 @@ return function()
             expect(Test.Service.GetOrderedDataStore).to.be.a("function")
             expect(Test.Service.GetRequestBudgetForRequestType).to.be.a("function")
             expect(Test.Service.ImportFromJSON).to.be.a("function")
-            expect(Test.Service.ExportFromJSON).to.be.a("function")
+            expect(Test.Service.ExportToJSON).to.be.a("function")
         end)
 
     end)
@@ -233,6 +233,8 @@ return function()
 
         end)
 
+        -- god knows whats happening here
+        -- i have no idea?
         it("should contain newly imported values after importing", function()
             reset()
 

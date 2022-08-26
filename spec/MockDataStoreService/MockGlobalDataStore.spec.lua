@@ -820,8 +820,9 @@ return function()
             end)
 
             conn:Disconnect() -- don't leak after test
-
-            expect(conn).to.be.a("RBXScriptConnection")
+            
+            -- idk why this just works
+            expect(typeof(conn)).to.be.equal("RBXScriptConnection")
 
         end)
 
@@ -1007,6 +1008,7 @@ return function()
             --TODO
         end)
 
+        -- TODO: fix this issue
         it("should ignore invalid values and keys", function()
             Test.reset()
             local MockGlobalDataStore = Test.Service:GetDataStore("Test")
